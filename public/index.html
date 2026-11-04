@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Оспанджбобить</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            background: #87CEEB; 
+            margin: 0; 
+            padding: 20px; 
+            text-align: center; 
+            transition: background 1s ease; 
+        }
+        .box { background: white; padding: 20px; border-radius: 15px; max-width: 900px; margin: 0 auto; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        input[type="file"] { margin: 10px; padding: 10px; }
+        select { padding: 10px; font-size: 16px; border-radius: 5px; margin: 10px; }
+        button { padding: 15px 30px; font-size: 18px; background: #f4d03f; border: 3px solid #b7950b; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        button:disabled { background: #ccc; }
+        
+        .result-container { display: none; justify-content: center; gap: 20px; margin-top: 30px; align-items: flex-end; }
+        .main-image-box img { max-width: 500px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        
+        .character-box { position: relative; text-align: center; }
+        .character-img { width: 200px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3)); }
+        
+        .speech-bubble {
+            background: white; padding: 15px; border-radius: 20px; border: 3px solid #333;
+            position: relative; margin-bottom: 10px; font-weight: bold; color: #333;
+            max-width: 200px; font-size: 14px;
+        }
+        .speech-bubble::after {
+            content: ''; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%);
+            border-width: 15px 15px 0; border-style: solid; border-color: #333 transparent transparent transparent;
+        }
+        .speech-bubble::before {
+            content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); z-index: 1;
+            border-width: 12px 12px 0; border-style: solid; border-color: white transparent transparent transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>Оспанджбобить фото</h1>
+        
+        <div>
+            <input type="file" id="imageInput" accept="image/*">
+            <br>
+            <select id="characterSelect">
+                <option value="sponge_bob.png">Губка Боб</option>
+                <option value="patrik.png">Патрик</option>
+                <option value="sandy.png">Сэнди</option>
+                <option value="skvidvart.png">Сквидвард</option>
+            </select>
+            <br>
+            <button id="btn" onclick="generate()">Сгенерировать!</button>
+        </div>
+
+        <div class="loader" id="loader" style="display:none; font-weight:bold; color:#e67e22; margin-top:20px;">
+            Нейросеть анализирует настроение и генерирует... Жди 30-40 секунд...
+        </div>
+
+        <div class="result-container" id="resultContainer">
+            <div class="main-image-box">
+                <img id="mainImage" />
+            </div>
+            <div class="character-box">
+                <div class="speech-bubble" id="speechText"></div>
+                <img class="character-img" id="characterImage" />
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function generate() {
+            const file = document.getElementById('imageInput').files[0];
+            const character = document.getElementById('characterSelect').value;
+            const btn = document.getElementById('btn');
+            const loader = document.getElementById('loader');
+            const resultContainer = document.getElementById('resultContainer');
+
+            if (!file) return alert('Выбери фото!');
+            
+            btn.disabled = true;
+            loader.style.display = 'block';
+            resultContainer.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('character', character);
+
+            try {
+                const res = await fetch('/api/generate', { method: 'POST', body: formData });
+                const data = await res.json();
+                
+                if (data.success) {
+                    loader.style.display = 'none';
+                    document.getElementById('mainImage').src = data.mainImageUrl;
+                    document.getElementById('characterImage').src = data.characterImageUrl;
+                    document.getElementById('speechText').textContent = data.speechText;
+                    resultContainer.style.display = 'flex';
+                    
+                    if (data.moodColor) {
+                        document.body.style.background = data.moodColor;
+                    }
+                } else {
+                    loader.style.display = 'none';
+                    alert('Ошибка: ' + data.error);
+                }
+            } catch (e) {
+                loader.style.display = 'none';
+                alert('Ошибка сети. Проверь терминал.');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
