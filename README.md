@@ -42,7 +42,7 @@
 
 1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/ваш-ник/mcp-web-meme.git
+   git clone https://github.com/shrevvd/llm_sponge_bob_project.git
    cd mcp-web-meme
    ```
 
