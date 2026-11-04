@@ -43,7 +43,7 @@
 1. Клонируйте репозиторий:
    ```bash
    git clone https://github.com/shrevvd/llm_sponge_bob_project.git
-   cd mcp-web-meme
+   cd llm_sponge_bob_project
    ```
 
 2. Установите зависимости:
