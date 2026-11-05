@@ -7,10 +7,6 @@ import fs from "fs";
 import path from "path";
 import crypto from 'crypto';
 
-let historyLlava = [];
-let historyMood = [];
-let historyQwen = [];
-
 const app = express();
 app.use(express.static('public'));
 app.use('/generated', express.static('generated'));
@@ -44,6 +40,10 @@ app.post('/api/generate', upload.single('image'), async (req, res) => {
     const userImagePath = req.file.path;
     
     const characterFile = req.body.character; 
+    const allowedCharacters = ['sponge_bob.png', 'patrik.png', 'sandy.png', 'skvidvart.png'];
+    if (!allowedCharacters.includes(characterFile)) {
+        return res.status(400).json({ error: 'Недопустимый персонаж' });
+    }
     const characterPath = path.join(process.cwd(), 'pictures', characterFile);
 
     let characterName = characterFile.replace('.png', ''); 
@@ -66,8 +66,6 @@ app.post('/api/generate', upload.single('image'), async (req, res) => {
         });
         const sceneDescription = visionResponse.message.content;
         
-        historyLlava.push({ role: "user", content: "[Изображение]" });
-        historyLlava.push({ role: "assistant", content: sceneDescription });
         
         console.log(` Сцена: ${sceneDescription}`);
 
@@ -83,8 +81,6 @@ app.post('/api/generate', upload.single('image'), async (req, res) => {
         let mood = moodResponse.message.content.toLowerCase().trim().replace(/[^a-z]/g, '');
         if (!moodColors[mood]) mood = 'neutral';
         
-        historyMood.push({ role: "user", content: sceneDescription });
-        historyMood.push({ role: "assistant", content: mood });
         
         console.log(` Настроение: ${mood}`);
 
@@ -100,7 +96,6 @@ app.post('/api/generate', upload.single('image'), async (req, res) => {
                     role: 'user', 
                     content: `Событие: "${sceneDescription}". Напиши короткую (примерно до 10 слов) реплику. Реплика должна быть связной и понятной, на русском, без оскорблений и мата, прямо связанной с событием, как бы ты отреагировал.` 
                 },
-                ...historyQwen.slice(-5)
             ]
         });
         
@@ -112,8 +107,6 @@ app.post('/api/generate', upload.single('image'), async (req, res) => {
             speechText = speechText.trim();
         }
         
-        historyQwen.push({ role: "user", content: sceneDescription });
-        historyQwen.push({ role: "assistant", content: speechText });
         
         console.log(` Реплика: ${speechText}`);
 
@@ -145,12 +138,5 @@ app.post('/api/generate', upload.single('image'), async (req, res) => {
     }
 });
 
-app.get('/api/history', (req, res) => {
-    res.json({
-        llava_history: historyLlava,
-        mood_history: historyMood,
-        qwen_history: historyQwen
-    });
-});
 
 app.listen(3000, () => console.log(' Веб-сервер: http://localhost:3000'));
