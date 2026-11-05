@@ -1,4 +1,4 @@
-# 🧽 Оспанджоббить: LLM Automation Pipeline
+# 🧽 Оспанджбобить: LLM Automation Pipeline
 
 <img width="1117" height="666" alt="Снимок экрана — 2026-11-05 в 03 09 49" src="https://github.com/user-attachments/assets/d93d8732-3d6d-4952-a338-ac5cbc205e22" />
 
